@@ -36,7 +36,7 @@
             <button class="btn" onclick="playAnim('return')">Return (V)</button>
             <button class="btn" onclick="playAnim('hesi')">Hesi (H)</button>
         </div>
-        <div style="margin-top: 10px;">WASD Move | DRAG Rotate Camera | Hold SPACE Shoot</div>
+        <div style="margin-top: 10px; text-shadow: 1px 1px 3px #000;">WASD Move | DRAG Rotate Camera | Hold SPACE Shoot/Dunk</div>
     </div>
     
     <div id="shot-meter-container">
@@ -223,7 +223,13 @@
                 if (!playCustomAnim && !isPlayerShooting) { playbackArray = defaultDribble; totalAnimDuration = playbackArray.reduce((sum, f) => sum + f.duration, 0); customAnimTimer = 0; playCustomAnim = true; }
             }
             player.lookAt(playerTarget);
-            controls.target.copy(player.position).y += 4; camera.position.add(new THREE.Vector3().subVectors(controls.target, controls.target)); controls.update();
+            
+            // Cleaned up Camera Tracking
+            const playerCenter = new THREE.Vector3(player.position.x, player.position.y + 4, player.position.z);
+            const playerDelta = new THREE.Vector3().subVectors(playerCenter, controls.target);
+            camera.position.add(playerDelta);
+            controls.target.copy(playerCenter);
+            controls.update();
 
             netVelocity -= netSpring * 0.3; netVelocity *= 0.85; netSpring += netVelocity; net.scale.set(1 - netSpring * 0.3, 1 + netSpring, 1 - netSpring * 0.3);
             if (isCharging) { shotPower += delta * 250 * shotDirection; if (shotPower >= 100) { shotPower = 100; shotDirection = -1; } if (shotPower <= 0) { shotPower = 0; shotDirection = 1; } document.getElementById('shot-meter-fill').style.height = shotPower + '%'; }
